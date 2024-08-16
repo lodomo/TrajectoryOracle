@@ -32,6 +32,7 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
 
     max_frames = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
     plot_yolo.agent = TrajectoryOracleRLAgent(action_space=2, max_frames=max_frames, prediction_frames=prediction_frames)  # Use the user-defined prediction_frames
+    load_saved_rl_data(plot_yolo.agent) # Attempt to load saved Q-Table from file, will just used the empty Q-Table if not found
 
     while True:
         objects, frame = plot_yolo.get_next_frame()
@@ -93,7 +94,7 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
     out_video.release()
 
     # Save RL data
-    save_rl_data(plot_yolo.agent, output_dir)
+    save_rl_data(plot_yolo.agent)
 
     # Visualize Q-table
     visualize_q_table(plot_yolo.agent.q_table, output_path=os.path.join(output_dir, "q_table_heatmap.png"))
@@ -108,11 +109,23 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
     cv2.destroyAllWindows()
 
 
-def save_rl_data(agent, output_dir):
-    q_table_path = os.path.join(output_dir, "q_table.pkl")
+def save_rl_data(agent):
+    # Save Q-Table in root directory to be reused
+    q_table_path = os.path.join(".", "q_table.pkl")
     with open(q_table_path, 'wb') as f:
         pickle.dump(agent.q_table, f)
     print(f"Saved RL Q-table to {q_table_path}")
+
+
+def load_saved_rl_data(agent):
+    # Load Q-Table file if it exists, will default to empty Q-Table otherwise
+    try:
+        q_table_path = os.path.join(".", "q_table.pkl")
+        with open(q_table_path, 'rb') as file:
+            agent.q_table = pickle.load(file)
+    except FileNotFoundError:
+        print(f"File not found at: {q_table_path}")
+
 
 def visualize_q_table(q_table, group_size=10, output_path=None):
     if isinstance(q_table, np.ndarray):
