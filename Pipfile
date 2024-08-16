@@ -1,11 +1,16 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
-
-[packages]
 
 [dev-packages]
+
+[packages]
+numpy = "*"
+matplotlib = "*"
+seaborn = "*"
+opencv-python-headless = "*"
+ultralytics = "*"
 
 [requires]
 python_version = "3.11"
