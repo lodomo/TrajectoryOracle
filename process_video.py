@@ -183,21 +183,22 @@ def select_video():
     else:
         messagebox.showwarning("No File Selected", "Please select a video file.")
 
-# GUI Setup
-root = tk.Tk()
-root.title("Trajectory Oracle")
+if __name__ == "__main__":
+    # GUI Setup
+    root = tk.Tk()
+    root.title("Trajectory Oracle")
 
-tk.Label(root, text="Distance Threshold:").grid(row=0, column=0, padx=10, pady=10)
-distance_threshold_entry = tk.Entry(root)
-distance_threshold_entry.insert(0, "50")
-distance_threshold_entry.grid(row=0, column=1, padx=10, pady=10)
+    tk.Label(root, text="Distance Threshold:").grid(row=0, column=0, padx=10, pady=10)
+    distance_threshold_entry = tk.Entry(root)
+    distance_threshold_entry.insert(0, "50")
+    distance_threshold_entry.grid(row=0, column=1, padx=10, pady=10)
 
-tk.Label(root, text="Prediction Frames:").grid(row=1, column=0, padx=10, pady=10)
-prediction_frames_entry = tk.Entry(root)
-prediction_frames_entry.insert(0, "20")
-prediction_frames_entry.grid(row=1, column=1, padx=10, pady=10)
+    tk.Label(root, text="Prediction Frames:").grid(row=1, column=0, padx=10, pady=10)
+    prediction_frames_entry = tk.Entry(root)
+    prediction_frames_entry.insert(0, "20")
+    prediction_frames_entry.grid(row=1, column=1, padx=10, pady=10)
 
-select_video_button = tk.Button(root, text="Select Video", command=select_video)
-select_video_button.grid(row=2, column=0, columnspan=2, pady=20)
+    select_video_button = tk.Button(root, text="Select Video", command=select_video)
+    select_video_button.grid(row=2, column=0, columnspan=2, pady=20)
 
-root.mainloop()
+    root.mainloop()
