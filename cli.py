@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
-from process_video import process_video
 import os.path
+
+from process_video import process_video
 
 if __name__ == "__main__":
     def exit_error(err: str):
@@ -11,7 +12,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-i", "--input", type=str, help="input file", required=True)
     parser.add_argument("-q", "--qtable", type=str, help="q-table file", required=True)
-    parser.add_argument("-d", "--distance", type=int, help="distance threshold", default=50.0)
+    parser.add_argument("-d", "--distance", type=int, help="distance threshold", default=50)
     parser.add_argument("-p", "--prediction", type=int, help="prediction frame count", default=20)
     args = parser.parse_args()
 

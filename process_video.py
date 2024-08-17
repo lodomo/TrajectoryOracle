@@ -96,16 +96,16 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path 
         frame_count += 1
 
     print(f"Finished processing video: {video_filepath}")
+
+    # Save RL data
+    save_rl_data(plot_yolo.agent, table_file_path)
+
     if output_dir:
         print(f"Saved output video with trajectory to {output_video_path}")
 
         # Release the video writer object
         out_video.release()
 
-    # Save RL data
-    save_rl_data(plot_yolo.agent, table_file_path)
-
-    if output_dir:
         # Visualize Q-table
         visualize_q_table(plot_yolo.agent.q_table, output_path=os.path.join(output_dir, "q_table_heatmap.png"))
 
