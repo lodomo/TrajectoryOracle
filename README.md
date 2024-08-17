@@ -11,7 +11,7 @@ First, ensure that your current Python version is 3.11 or install it if necessar
 
 Then, to set up our program, clone the repository and enter the project directory:
 
-```bash
+```
 git clone https://github.com/lodomo/TrajectoryOracle.git
 cd TrajectoryOracle
 ```
