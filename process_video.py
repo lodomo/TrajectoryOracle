@@ -9,8 +9,8 @@ from rl_agent import TrajectoryOracleRLAgent
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-def process_video(video_filepath, output_dir='./output_frames', table_file_path = './tables', distance_threshold=50, prediction_frames=20, visualize=True):
-    if not os.path.exists(output_dir):
+def process_video(video_filepath, output_dir='./output_frames', table_file_path = './tables', distance_threshold=50, prediction_frames=20):
+    if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Created directory: {output_dir}")
     if not os.path.exists('./tables'):
@@ -24,10 +24,11 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path 
     height = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = plot_yolo.video_capture.get(cv2.CAP_PROP_FPS)
 
-    # Define the codec and create VideoWriter object
-    output_video_path = os.path.join(output_dir, "output_with_trajectory.mp4")
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out_video = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
+    if output_dir:
+        # Define the codec and create VideoWriter object
+        output_video_path = os.path.join(output_dir, "output_with_trajectory.mp4")
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out_video = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
 
     frame_count = 0
     all_positions = []  # To store midpoints for trajectory map
@@ -80,29 +81,31 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path 
             # Update the Q-table with the action taken
             plot_yolo.agent.update_q_value(frame_count, action, reward, frame_count + 1)
 
-        # Write the processed frame with trajectory to the output video
-        out_video.write(frame)
+        if output_dir:
+            # Write the processed frame with trajectory to the output video
+            out_video.write(frame)
 
-        # Optionally, save individual frames with the trajectory overlay
-        output_path = os.path.join(output_dir, f"frame_{frame_count}.jpg")
-        if frame_count % plot_yolo.agent.prediction_frames == 0:
-            cv2.imwrite(output_path.replace('.jpg', '_prediction.jpg'), frame)
-        else:
-            cv2.imwrite(output_path, frame)
-            print(f"Saved frame {frame_count} to {output_path}")
+            # Optionally, save individual frames with the trajectory overlay
+            output_path = os.path.join(output_dir, f"frame_{frame_count}.jpg")
+            if frame_count % plot_yolo.agent.prediction_frames == 0:
+                cv2.imwrite(output_path.replace('.jpg', '_prediction.jpg'), frame)
+            else:
+                cv2.imwrite(output_path, frame)
+                print(f"Saved frame {frame_count} to {output_path}")
 
         frame_count += 1
 
     print(f"Finished processing video: {video_filepath}")
-    print(f"Saved output video with trajectory to {output_video_path}")
+    if output_dir:
+        print(f"Saved output video with trajectory to {output_video_path}")
 
-    # Release the video writer object
-    out_video.release()
+        # Release the video writer object
+        out_video.release()
 
     # Save RL data
     save_rl_data(plot_yolo.agent, table_file_path)
 
-    if visualize:
+    if output_dir:
         # Visualize Q-table
         visualize_q_table(plot_yolo.agent.q_table, output_path=os.path.join(output_dir, "q_table_heatmap.png"))
 
@@ -117,20 +120,21 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path 
 
 
 def save_rl_data(agent, table_file_path):
+    q_table_path = os.path.join(table_file_path)
+
     # Save Q-Table in ./tables/q_table.pkl if new, or overwrite originally selected file
     if table_file_path is None or table_file_path == "":
         q_table_path = os.path.join("./tables", "q_table.pkl")
-    else:
-        q_table_path = os.path.join(table_file_path)
     with open(q_table_path, 'wb') as f:
         pickle.dump(agent.q_table, f)
     print(f"Saved RL Q-table to {q_table_path}")
 
 
 def load_saved_rl_data(agent, table_file_path):
+    q_table_path = os.path.join(table_file_path)
+
     # Load Q-Table file if it exists, will default to empty Q-Table otherwise
     try:
-        q_table_path = os.path.join(table_file_path)
         with open(q_table_path, 'rb') as file:
             agent.q_table = pickle.load(file)
     except FileNotFoundError:
