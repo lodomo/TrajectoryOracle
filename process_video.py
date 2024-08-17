@@ -207,6 +207,8 @@ def select_video():
         distance_threshold = int(distance_threshold_entry.get())
         prediction_frames = int(prediction_frames_entry.get())
         table_file_path = q_table_file_path.get()
+        if table_file_path.startswith("No Q-Table"):
+            table_file_path = ""
         process_video(video_filepath, output_dir, table_file_path, distance_threshold, prediction_frames)
     else:
         messagebox.showwarning("No File Selected", "Please select a video file.")
