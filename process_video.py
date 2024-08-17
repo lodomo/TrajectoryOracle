@@ -9,10 +9,13 @@ from rl_agent import TrajectoryOracleRLAgent
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-def process_video(video_filepath, output_dir='./output_frames', distance_threshold=50, prediction_frames=20, visualize=True):
+def process_video(video_filepath, output_dir='./output_frames', table_file_path = './tables', distance_threshold=50, prediction_frames=20, visualize=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Created directory: {output_dir}")
+    if not os.path.exists('./tables'):
+        os.makedirs('./tables')
+        print(f"Created directory: {'./tables'}")
 
     plot_yolo = PlotYolo(video_filepath, distance_threshold)
 
@@ -32,7 +35,7 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
 
     max_frames = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
     plot_yolo.agent = TrajectoryOracleRLAgent(action_space=2, max_frames=max_frames, prediction_frames=prediction_frames)  # Use the user-defined prediction_frames
-    load_saved_rl_data(plot_yolo.agent) # Attempt to load saved Q-Table from file, will just used the empty Q-Table if not found
+    load_saved_rl_data(plot_yolo.agent, table_file_path) # Attempt to load saved Q-Table from file, will just used the empty Q-Table if not found
 
     while True:
         objects, frame = plot_yolo.get_next_frame()
@@ -69,7 +72,10 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
             previous_midpoint = (mid_x, mid_y)
 
             # Simulate a reward for the action (this will vary depending on your logic)
-            reward = 10 if action == 0 else -5
+            # Give it a larger reward the more accurate the prediction is, penalize it for waiting
+            prediction_difference = abs(predicted_mid_x - mid_x) + abs(predicted_mid_y - mid_y)
+            prediction_reward = 10 - prediction_difference
+            reward = prediction_reward if action == 0 else -5
 
             # Update the Q-table with the action taken
             plot_yolo.agent.update_q_value(frame_count, action, reward, frame_count + 1)
@@ -94,7 +100,7 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
     out_video.release()
 
     # Save RL data
-    save_rl_data(plot_yolo.agent)
+    save_rl_data(plot_yolo.agent, table_file_path)
 
     if visualize:
         # Visualize Q-table
@@ -110,18 +116,21 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
     cv2.destroyAllWindows()
 
 
-def save_rl_data(agent):
-    # Save Q-Table in root directory to be reused
-    q_table_path = os.path.join(".", "q_table.pkl")
+def save_rl_data(agent, table_file_path):
+    # Save Q-Table in ./tables/q_table.pkl if new, or overwrite originally selected file
+    if table_file_path is None or table_file_path == "":
+        q_table_path = os.path.join("./tables", "q_table.pkl")
+    else:
+        q_table_path = os.path.join(table_file_path)
     with open(q_table_path, 'wb') as f:
         pickle.dump(agent.q_table, f)
     print(f"Saved RL Q-table to {q_table_path}")
 
 
-def load_saved_rl_data(agent):
+def load_saved_rl_data(agent, table_file_path):
     # Load Q-Table file if it exists, will default to empty Q-Table otherwise
     try:
-        q_table_path = os.path.join(".", "q_table.pkl")
+        q_table_path = os.path.join(table_file_path)
         with open(q_table_path, 'rb') as file:
             agent.q_table = pickle.load(file)
     except FileNotFoundError:
@@ -193,9 +202,19 @@ def select_video():
         output_dir = os.path.join('./output_frames', os.path.splitext(os.path.basename(video_filepath))[0])
         distance_threshold = int(distance_threshold_entry.get())
         prediction_frames = int(prediction_frames_entry.get())
-        process_video(video_filepath, output_dir, distance_threshold, prediction_frames)
+        table_file_path = q_table_file_path.get()
+        process_video(video_filepath, output_dir, table_file_path, distance_threshold, prediction_frames)
     else:
         messagebox.showwarning("No File Selected", "Please select a video file.")
+
+def select_q_table_file(file_path):
+    q_table_filepath = filedialog.askopenfilename(title="Select Q-Table file", defaultextension=".pkl", filetypes=[("PKL", "*.pkl")])
+    if q_table_filepath:
+        output_dir = os.path.join('./tables', os.path.splitext(os.path.basename(q_table_filepath))[0])
+        file_path.set(q_table_filepath)
+    else:
+        messagebox.showwarning("No File Selected", "Please select a pkl file.")
+
 
 if __name__ == "__main__":
     # GUI Setup
@@ -214,5 +233,11 @@ if __name__ == "__main__":
 
     select_video_button = tk.Button(root, text="Select Video", command=select_video)
     select_video_button.grid(row=2, column=0, columnspan=2, pady=20)
+
+    q_table_file_path = tk.StringVar()
+    q_table_file_path.set("No Q-Table file selected, will default to new/empty Q-Table")
+    q_table_label = tk.Label(root, textvariable=q_table_file_path).grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+    select_q_table_button = tk.Button(root, text="Select Q-Table File", command= lambda: select_q_table_file(q_table_file_path))
+    select_q_table_button.grid(row=4, column=0, columnspan=2, pady=(0,20))
 
     root.mainloop()
