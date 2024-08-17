@@ -128,12 +128,16 @@ def save_rl_data(agent, table_file_path):
         pickle.dump(agent.q_table_dict, f)  # Save the dictionary of Q-tables
     print(f"Saved RL Q-table to {q_table_path}")
 
-
-
-
 def load_saved_rl_data(agent, table_file_path):
     q_table_path = os.path.join(table_file_path)
 
+    if os.path.exists(q_table_path):
+        with open(q_table_path, "rb") as f:
+            agent.q_table_dict = pickle.load(f)
+    else:
+        print(f"Q-Table not found at: {q_table_path}")
+
+    """ I think this is outdated
     # Load Q-Tables if they exist
     if os.path.exists(q_table_path):
         for file_name in os.listdir(q_table_path):
@@ -144,8 +148,7 @@ def load_saved_rl_data(agent, table_file_path):
                 print(f"Loaded RL Q-table for label '{label}' from {os.path.join(q_table_path, file_name)}")
     else:
         print(f"Directory not found at: {q_table_path}")
-
-
+    """
 
 def visualize_q_table(q_table_dict, group_size=10, output_path=None):
     for label, q_table in q_table_dict.items():
