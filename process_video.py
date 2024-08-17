@@ -20,6 +20,7 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path=
     plot_yolo = PlotYolo(video_filepath, distance_threshold)
 
     # Get the video properties to write the output video
+    max_frames = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
     width = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = plot_yolo.video_capture.get(cv2.CAP_PROP_FPS)
@@ -34,7 +35,6 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path=
     all_positions = []  # To store midpoints for trajectory map
     previous_midpoint = None  # To store the previous midpoint
 
-    max_frames = int(plot_yolo.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
     plot_yolo.agent = TrajectoryOracleRLAgent(action_space=2, max_frames=max_frames, prediction_frames=prediction_frames)
     load_saved_rl_data(plot_yolo.agent, table_file_path)  # Attempt to load saved Q-Tables from file
 

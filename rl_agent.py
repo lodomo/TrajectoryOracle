@@ -25,16 +25,23 @@ class TrajectoryOracleRLAgent:
         self.initialize_q_table_for_label(label)
 
         # Determine the state index based on the current frame number
-        if frame_number + self.prediction_frames < self.max_frames:
-            state_index = frame_number + self.prediction_frames  # Predict for a future frame
+        predicted_frame = frame_number + self.prediction_frames
+        if predicted_frame < self.max_frames:
+            state_index = predicted_frame  # Predict for a future frame
         else:
             state_index = self.max_frames - 1  # Stay within the frame range
+
+        # Ensure the state index is within the valid range of the Q-table
+        if state_index >= len(self.q_table_dict[label]):
+            print(f"Warning: state_index {state_index} is out of bounds for label '{label}'. Adjusting to the last valid index.")
+            state_index = len(self.q_table_dict[label]) - 1
 
         # Choose an action based on exploration-exploitation trade-off
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.action_space)  # Explore
         else:
             return np.argmax(self.q_table_dict[label][state_index])  # Exploit
+
 
     def update_q_value(self, frame_number, action, reward, next_frame_number, label):
         # Initialize the Q-table for the object label if it doesn't exist
