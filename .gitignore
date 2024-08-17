@@ -1,3 +1,4 @@
 /__pycache__/
+/output_frames/
 /test_output/
 yolov8s.pt
