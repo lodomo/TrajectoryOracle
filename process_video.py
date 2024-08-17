@@ -53,6 +53,9 @@ def process_video(video_filepath, output_dir='./output_frames', table_file_path=
             mid_y = (obj.y1 + obj.y2) // 2  
             all_positions.append((mid_x, mid_y))
 
+            predicted_mid_x = mid_x
+            predicted_mid_y = mid_y
+
             # Predict the future position
             predicted_frame = frame_count + plot_yolo.agent.prediction_frames
             if predicted_frame < max_frames:
