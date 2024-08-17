@@ -52,7 +52,7 @@ Lastly, a Trajectory Map of Detected Objects is displayed, showing the position 
 
 Alternatively, instead of using the GUI, the program can be run via a command line interface. A video file can be provided as an input file, and a qtable filename can be specified. The distance threshold and the number of prediction frames can be provided optionally. The distance threshold defaults to 50.0, and the number of prediction frames defaults to 20.
 
-This is the usage statement of the program:
+This is the usage statement of the CLI program:
 
 ```
 usage: cli.py [-h] -i INPUT -q QTABLE [-d DISTANCE] [-p PREDICTION]
