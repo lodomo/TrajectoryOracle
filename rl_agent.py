@@ -6,7 +6,7 @@ class TrajectoryOracleRLAgent:
         self.action_space = action_space
         self.max_frames = max_frames  # The maximum number of frames in the video
         self.prediction_frames = prediction_frames  # User-defined frames into the future to predict
-        self.q_table = np.zeros((self.max_frames, self.action_space))  # 2D Q-table with frames as states
+        self.q_table_dict = {}  # Dictionary to store Q-tables by object label
         self.epsilon = 0.1  # Exploration rate
         self.learning_rate = 0.01
         self.discount_factor = 0.99
@@ -15,32 +15,42 @@ class TrajectoryOracleRLAgent:
         self.predicted_positions = []
         self.actual_positions = []
 
-    def choose_action(self, frame_number):
-        # Choose action based on the frame number and a user-defined number of future frames
+    def initialize_q_table_for_label(self, label):
+        """Initialize a Q-table for a specific object label."""
+        if label not in self.q_table_dict:
+            self.q_table_dict[label] = np.zeros((self.max_frames, self.action_space))
+
+    def choose_action(self, frame_number, label):
+        # Initialize the Q-table for the object label if it doesn't exist
+        self.initialize_q_table_for_label(label)
+
+        # Determine the state index based on the current frame number
         if frame_number + self.prediction_frames < self.max_frames:
             state_index = frame_number + self.prediction_frames  # Predict for a future frame
         else:
             state_index = self.max_frames - 1  # Stay within the frame range
 
+        # Choose an action based on exploration-exploitation trade-off
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.action_space)  # Explore
         else:
-            return np.argmax(self.q_table[state_index])  # Exploit
+            return np.argmax(self.q_table_dict[label][state_index])  # Exploit
 
-    def update_q_value(self, frame_number, action, reward, next_frame_number):
+    def update_q_value(self, frame_number, action, reward, next_frame_number, label):
+        # Initialize the Q-table for the object label if it doesn't exist
+        self.initialize_q_table_for_label(label)
+
+        # Define the current and next state indices
         state_index = frame_number
-        next_state_index = next_frame_number
+        next_state_index = min(next_frame_number, self.max_frames - 1)
 
-        if next_state_index >= self.q_table.shape[0]:
-            # If the next_state_index is out of bounds, handle it by not updating
-            next_state_index = self.q_table.shape[0] - 1  # Set to the last valid index
+        # Calculate the Temporal Difference (TD) target and error
+        best_next_action = np.argmax(self.q_table_dict[label][next_state_index])
+        td_target = reward + self.discount_factor * self.q_table_dict[label][next_state_index, best_next_action]
+        td_error = td_target - self.q_table_dict[label][state_index, action]
 
-        best_next_action = np.argmax(self.q_table[next_state_index])
-        td_target = reward + self.discount_factor * self.q_table[next_state_index, best_next_action]
-        td_error = td_target - self.q_table[state_index, action]
-
-        self.q_table[state_index, action] += self.learning_rate * td_error
-
+        # Update the Q-value in the Q-table
+        self.q_table_dict[label][state_index, action] += self.learning_rate * td_error
 
     def store_positions(self, predicted, actual):
         """ Store predicted and actual positions for accuracy calculation. """
