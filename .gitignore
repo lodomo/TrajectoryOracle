@@ -1,4 +1,5 @@
 /__pycache__/
 /output_frames/
 /test_output/
+/train_videos/
 yolov8s.pt
