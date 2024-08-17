@@ -9,7 +9,7 @@ from rl_agent import TrajectoryOracleRLAgent
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-def process_video(video_filepath, output_dir='./output_frames', distance_threshold=50, prediction_frames=20):
+def process_video(video_filepath, output_dir='./output_frames', distance_threshold=50, prediction_frames=20, visualize=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Created directory: {output_dir}")
@@ -96,14 +96,15 @@ def process_video(video_filepath, output_dir='./output_frames', distance_thresho
     # Save RL data
     save_rl_data(plot_yolo.agent)
 
-    # Visualize Q-table
-    visualize_q_table(plot_yolo.agent.q_table, output_path=os.path.join(output_dir, "q_table_heatmap.png"))
+    if visualize:
+        # Visualize Q-table
+        visualize_q_table(plot_yolo.agent.q_table, output_path=os.path.join(output_dir, "q_table_heatmap.png"))
 
-    # Plot predicted vs actual positions over time
-    plot_yolo.agent.plot_predicted_vs_actual()
+        # Plot predicted vs actual positions over time
+        plot_yolo.agent.plot_predicted_vs_actual()
 
-    # Generate trajectory map
-    generate_trajectory_map(all_positions, output_dir, width, height)
+        # Generate trajectory map
+        generate_trajectory_map(all_positions, output_dir, width, height)
 
     # Close video display window
     cv2.destroyAllWindows()
