@@ -20,7 +20,15 @@ class TrajectoryOracleRLAgent:
         if label not in self.q_table_dict:
             self.q_table_dict[label] = np.zeros((self.max_frames, self.action_space))
         elif self.max_frames > len(self.q_table_dict[label]): # resize array
+            prev_len = len(self.q_table_dict[label])
+
+            # resize label's q-table
             self.q_table_dict[label] = np.resize(self.q_table_dict[label], (self.max_frames, self.action_space))
+
+            # 'zero' new elements
+            for i in range(prev_len, self.max_frames):
+                for j in range(self.action_space):
+                    self.q_table_dict[label][i,j] = 0.0
 
     def choose_action(self, frame_number, label):
         # Initialize the Q-table for the object label if it doesn't exist
