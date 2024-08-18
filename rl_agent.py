@@ -19,6 +19,8 @@ class TrajectoryOracleRLAgent:
         """Initialize a Q-table for a specific object label."""
         if label not in self.q_table_dict:
             self.q_table_dict[label] = np.zeros((self.max_frames, self.action_space))
+        elif self.max_frames > len(self.q_table_dict[label]): # resize array
+            self.q_table_dict[label] = np.resize(self.q_table_dict[label], (self.max_frames, self.action_space))
 
     def choose_action(self, frame_number, label):
         # Initialize the Q-table for the object label if it doesn't exist
