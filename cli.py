@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-i", "--input", type=str, help="input file", required=True)
     parser.add_argument("-q", "--qtable", type=str, help="q-table file", required=True)
-    parser.add_argument("-d", "--distance", type=int, help="distance threshold", default=50)
+    parser.add_argument("-d", "--distance", type=float, help="distance threshold", default=50.0)
     parser.add_argument("-p", "--prediction", type=int, help="prediction frame count", default=20)
     args = parser.parse_args()
 
